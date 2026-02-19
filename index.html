@@ -721,13 +721,17 @@
         let supabase = null;
         let supabaseEnabled = false;
         
-        // Initialize Supabase
-        try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            supabaseEnabled = true;
-            console.log('Supabase connected');
-        } catch (e) {
-            console.log('Supabase not available, using localStorage');
+        // Initialize Supabase (delayed to not block password check)
+        function initSupabase() {
+            try {
+                if (window.supabase && window.supabase.createClient) {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    supabaseEnabled = true;
+                    console.log('Supabase connected');
+                }
+            } catch (e) {
+                console.log('Supabase not available, using localStorage');
+            }
         }
         
         // Local state
@@ -749,18 +753,30 @@
         
         // Password check
         function checkPassword() {
-            const pw = document.getElementById('password').value.toLowerCase();
+            const input = document.getElementById('password');
+            if (!input) {
+                console.error('Password input not found');
+                return;
+            }
+            const pw = input.value.toLowerCase().trim();
+            console.log('Password entered:', pw, 'Length:', pw.length);
             if (pw === 'vamos') {
                 document.getElementById('password-gate').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
                 loadContent();
             } else {
                 document.getElementById('password-error').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('password-error').style.display = 'none';
+                }, 2000);
             }
         }
         
         // Load markdown content
         async function loadContent() {
+            // Initialize Supabase now that we're past the password
+            initSupabase();
+            
             for (const [id, file] of Object.entries(contentFiles)) {
                 try {
                     const res = await fetch(file);
