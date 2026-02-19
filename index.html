@@ -718,14 +718,14 @@
         const SUPABASE_URL = 'https://pzjwzlrrpszqbykxiscc.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6and6bHJycHN6cWJ5a3hpc2NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDg2MDUsImV4cCI6MjA4NzA4NDYwNX0.0TxnBaTngHCZ5ZT8ahzcAKBEi2vSaI4xxP4ZYneNmz0';
         
-        let supabase = null;
+        let sbClient = null;
         let supabaseEnabled = false;
         
         // Initialize Supabase (delayed to not block password check)
         function initSupabase() {
             try {
                 if (window.supabase && window.supabase.createClient) {
-                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                     supabaseEnabled = true;
                     console.log('Supabase connected');
                 }
@@ -876,9 +876,9 @@
         
         // State persistence with Supabase
         async function saveVote(proposalId, voteType) {
-            if (supabaseEnabled && supabase) {
+            if (supabaseEnabled && sbClient) {
                 try {
-                    await supabase.from('votes').insert({ 
+                    await sbClient.from('votes').insert({ 
                         proposal_id: proposalId, 
                         vote_type: voteType 
                     });
@@ -890,9 +890,9 @@
         }
         
         async function saveComment(proposalId, text) {
-            if (supabaseEnabled && supabase) {
+            if (supabaseEnabled && sbClient) {
                 try {
-                    await supabase.from('comments').insert({ 
+                    await sbClient.from('comments').insert({ 
                         proposal_id: proposalId, 
                         text: text,
                         author: 'User'
@@ -906,10 +906,10 @@
         
         async function loadState() {
             // Try Supabase first
-            if (supabaseEnabled && supabase) {
+            if (supabaseEnabled && sbClient) {
                 try {
                     // Load votes
-                    const { data: votes } = await supabase.from('votes').select('*');
+                    const { data: votes } = await sbClient.from('votes').select('*');
                     if (votes) {
                         state.votes = {};
                         votes.forEach(v => {
@@ -921,7 +921,7 @@
                     }
                     
                     // Load comments
-                    const { data: comments } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
+                    const { data: comments } = await sbClient.from('comments').select('*').order('created_at', { ascending: true });
                     if (comments) {
                         state.comments = {};
                         comments.forEach(c => {
@@ -963,7 +963,7 @@
         function subscribeToUpdates() {
             if (!supabaseEnabled || !supabase) return;
             
-            supabase.channel('votes-changes')
+            sbClient.channel('votes-changes')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'votes' }, (payload) => {
                     const v = payload.new;
                     if (!state.votes[v.proposal_id]) {
@@ -974,7 +974,7 @@
                 })
                 .subscribe();
             
-            supabase.channel('comments-changes')
+            sbClient.channel('comments-changes')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, (payload) => {
                     const c = payload.new;
                     if (!state.comments[c.proposal_id]) {
