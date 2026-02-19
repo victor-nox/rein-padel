@@ -712,11 +712,23 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Config - will be replaced with Supabase
-        let SUPABASE_URL = '';
-        let SUPABASE_KEY = '';
+        // Supabase Config
+        const SUPABASE_URL = 'https://pzjwzlrrpszqbykxiscc.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6and6bHJycHN6cWJ5a3hpc2NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MDg2MDUsImV4cCI6MjA4NzA4NDYwNX0.0TxnBaTngHCZ5ZT8ahzcAKBEi2vSaI4xxP4ZYneNmz0';
+        
+        let supabase = null;
         let supabaseEnabled = false;
+        
+        // Initialize Supabase
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            supabaseEnabled = true;
+            console.log('Supabase connected');
+        } catch (e) {
+            console.log('Supabase not available, using localStorage');
+        }
         
         // Local state
         const state = {
@@ -760,7 +772,10 @@
             }
             
             // Load votes/comments from Supabase or localStorage
-            loadState();
+            await loadState();
+            
+            // Subscribe to realtime updates
+            subscribeToUpdates();
         }
         
         // Navigation
@@ -794,14 +809,11 @@
         function vote(id, value) {
             if (!state.votes[id]) state.votes[id] = { up: 0, down: 0 };
             
-            if (value > 0) {
-                state.votes[id].up++;
-            } else {
-                state.votes[id].down++;
-            }
+            const voteType = value > 0 ? 'up' : 'down';
+            state.votes[id][voteType]++;
             
             updateVoteDisplay(id);
-            saveState();
+            saveVote(id, voteType);
         }
         
         function updateVoteDisplay(id) {
@@ -829,7 +841,7 @@
             
             input.value = '';
             updateCommentsDisplay(id);
-            saveState();
+            saveComment(id, text);
         }
         
         function updateCommentsDisplay(id) {
@@ -846,25 +858,73 @@
             `).join('');
         }
         
-        // State persistence
-        function saveState() {
-            if (supabaseEnabled) {
-                // TODO: Save to Supabase
-            } else {
-                localStorage.setItem('rein-padel-state', JSON.stringify(state));
+        // State persistence with Supabase
+        async function saveVote(proposalId, voteType) {
+            if (supabaseEnabled && supabase) {
+                try {
+                    await supabase.from('votes').insert({ 
+                        proposal_id: proposalId, 
+                        vote_type: voteType 
+                    });
+                } catch (e) {
+                    console.log('Vote save error:', e);
+                }
             }
+            localStorage.setItem('rein-padel-state', JSON.stringify(state));
         }
         
-        function loadState() {
-            if (supabaseEnabled) {
-                // TODO: Load from Supabase
-            } else {
-                const saved = localStorage.getItem('rein-padel-state');
-                if (saved) {
-                    const data = JSON.parse(saved);
-                    state.votes = data.votes || {};
-                    state.comments = data.comments || {};
+        async function saveComment(proposalId, text) {
+            if (supabaseEnabled && supabase) {
+                try {
+                    await supabase.from('comments').insert({ 
+                        proposal_id: proposalId, 
+                        text: text,
+                        author: 'User'
+                    });
+                } catch (e) {
+                    console.log('Comment save error:', e);
                 }
+            }
+            localStorage.setItem('rein-padel-state', JSON.stringify(state));
+        }
+        
+        async function loadState() {
+            // Try Supabase first
+            if (supabaseEnabled && supabase) {
+                try {
+                    // Load votes
+                    const { data: votes } = await supabase.from('votes').select('*');
+                    if (votes) {
+                        state.votes = {};
+                        votes.forEach(v => {
+                            if (!state.votes[v.proposal_id]) {
+                                state.votes[v.proposal_id] = { up: 0, down: 0 };
+                            }
+                            state.votes[v.proposal_id][v.vote_type]++;
+                        });
+                    }
+                    
+                    // Load comments
+                    const { data: comments } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
+                    if (comments) {
+                        state.comments = {};
+                        comments.forEach(c => {
+                            if (!state.comments[c.proposal_id]) {
+                                state.comments[c.proposal_id] = [];
+                            }
+                            state.comments[c.proposal_id].push({
+                                text: c.text,
+                                time: new Date(c.created_at).toLocaleString('de')
+                            });
+                        });
+                    }
+                    console.log('Loaded from Supabase');
+                } catch (e) {
+                    console.log('Supabase load error, using localStorage:', e);
+                    loadFromLocalStorage();
+                }
+            } else {
+                loadFromLocalStorage();
             }
             
             // Update all displays
@@ -874,12 +934,43 @@
             });
         }
         
-        // Supabase integration (placeholder)
-        function initSupabase(url, key) {
-            SUPABASE_URL = url;
-            SUPABASE_KEY = key;
-            supabaseEnabled = true;
-            // TODO: Initialize Supabase client
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('rein-padel-state');
+            if (saved) {
+                const data = JSON.parse(saved);
+                state.votes = data.votes || {};
+                state.comments = data.comments || {};
+            }
+        }
+        
+        // Subscribe to realtime updates
+        function subscribeToUpdates() {
+            if (!supabaseEnabled || !supabase) return;
+            
+            supabase.channel('votes-changes')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'votes' }, (payload) => {
+                    const v = payload.new;
+                    if (!state.votes[v.proposal_id]) {
+                        state.votes[v.proposal_id] = { up: 0, down: 0 };
+                    }
+                    state.votes[v.proposal_id][v.vote_type]++;
+                    updateVoteDisplay(v.proposal_id);
+                })
+                .subscribe();
+            
+            supabase.channel('comments-changes')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, (payload) => {
+                    const c = payload.new;
+                    if (!state.comments[c.proposal_id]) {
+                        state.comments[c.proposal_id] = [];
+                    }
+                    state.comments[c.proposal_id].push({
+                        text: c.text,
+                        time: new Date(c.created_at).toLocaleString('de')
+                    });
+                    updateCommentsDisplay(c.proposal_id);
+                })
+                .subscribe();
         }
         
         // Enter key on comments
