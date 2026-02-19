@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎾 Rein Padel Tour - Video Konzept</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #141414;
+            --card-hover: #1a1a1a;
+            --border: #2a2a2a;
+            --text: #fafafa;
+            --muted: #888;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --gemini: #4285f4;
+            --claude: #ff6b35;
+            --vote-up: #22c55e;
+            --vote-down: #ef4444;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        /* Password Gate */
+        #password-gate {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .password-box {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .password-box h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .password-box p {
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+        
+        .password-input {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .password-input input {
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--card);
+            color: var(--text);
+            width: 200px;
+            text-align: center;
+        }
+        
+        .password-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .password-input button {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .password-input button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+        
+        .password-error {
+            color: var(--vote-down);
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        /* Main App */
+        #app {
+            display: none;
+        }
+        
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .lang-toggle {
+            display: flex;
+            background: var(--card);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .lang-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+        
+        /* Navigation */
+        nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .nav-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        
+        .nav-btn:hover:not(.active) {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+        
+        /* Content */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        
+        .section-header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+        
+        /* Comparison Grid */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 900px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .proposal {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .proposal-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .proposal-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        
+        .proposal.gemini .proposal-icon {
+            background: linear-gradient(135deg, var(--gemini), #34a853);
+            color: white;
+        }
+        
+        .proposal.claude .proposal-icon {
+            background: linear-gradient(135deg, var(--claude), #ff9f1c);
+            color: white;
+        }
+        
+        .proposal-title {
+            flex: 1;
+        }
+        
+        .proposal-title h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .proposal-title span {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        
+        .proposal-content {
+            padding: 1.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        
+        .proposal-content h2, .proposal-content h3, .proposal-content h4 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+        }
+        
+        .proposal-content h2:first-child, .proposal-content h3:first-child {
+            margin-top: 0;
+        }
+        
+        .proposal-content ul, .proposal-content ol {
+            padding-left: 1.5rem;
+            margin: 0.75rem 0;
+        }
+        
+        .proposal-content li {
+            margin: 0.5rem 0;
+        }
+        
+        .proposal-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+        }
+        
+        .proposal-content th, .proposal-content td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        .proposal-content th {
+            background: var(--bg);
+        }
+        
+        .proposal-content code {
+            background: var(--bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        
+        .proposal-content blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+        
+        .proposal-content em {
+            color: var(--accent);
+        }
+        
+        .proposal-content strong {
+            color: var(--text);
+        }
+        
+        /* Voting */
+        .proposal-footer {
+            padding: 1rem 1.5rem;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .vote-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .vote-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .vote-btn.up:hover, .vote-btn.up.active {
+            background: var(--vote-up);
+            border-color: var(--vote-up);
+        }
+        
+        .vote-btn.down:hover, .vote-btn.down.active {
+            background: var(--vote-down);
+            border-color: var(--vote-down);
+        }
+        
+        .vote-count {
+            font-weight: 700;
+            min-width: 2rem;
+            text-align: center;
+        }
+        
+        .comment-btn {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .comment-btn:hover {
+            color: var(--text);
+            border-color: var(--text);
+        }
+        
+        /* Comments Section */
+        .comments-section {
+            display: none;
+            padding: 1.5rem;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+        }
+        
+        .comments-section.open {
+            display: block;
+        }
+        
+        .comment-input {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .comment-input input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        
+        .comment-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .comment-input button {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .comment-input button:hover {
+            background: var(--accent-hover);
+        }
+        
+        .comments-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .comment {
+            padding: 0.75rem;
+            background: var(--card);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .comment-text {
+            font-size: 0.9rem;
+        }
+        
+        .comment-meta {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 0.25rem;
+        }
+        
+        /* Section visibility */
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: var(--muted);
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            
+            nav {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .section-header h2 {
+                font-size: 1.75rem;
+            }
+            
+            .proposal-content {
+                max-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Password Gate -->
+    <div id="password-gate">
+        <div class="password-box">
+            <h1>🎾</h1>
+            <h1>Rein Padel Tour</h1>
+            <p>Video Konzept Diskussion</p>
+            <div class="password-input">
+                <input type="password" id="password" placeholder="Passwort" onkeypress="if(event.key==='Enter')checkPassword()">
+                <button onclick="checkPassword()">Entrer →</button>
+            </div>
+            <p class="password-error" id="password-error">Falsches Passwort</p>
+        </div>
+    </div>
+    
+    <!-- Main App -->
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <div class="logo">🎾 Rein Padel Tour</div>
+                <nav>
+                    <button class="nav-btn active" data-section="konzept">📋 Konzept</button>
+                    <button class="nav-btn" data-section="lucy">🎬 Lucy</button>
+                    <button class="nav-btn" data-section="outdoor">🏔️ Outdoor</button>
+                </nav>
+                <div class="header-controls">
+                    <div class="lang-toggle">
+                        <button class="lang-btn active" data-lang="de">DE</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <!-- Konzept Section -->
+            <section id="section-konzept" class="section active">
+                <div class="section-header">
+                    <h2 data-de="📋 Drehkonzept & Output-Formate" data-fr="📋 Concept de tournage & Formats">📋 Drehkonzept & Output-Formate</h2>
+                    <p data-de="Vergleiche die Vorschläge für den Drehtag morgen" data-fr="Comparez les propositions pour le tournage de demain">Vergleiche die Vorschläge für den Drehtag morgen</p>
+                </div>
+                <div class="comparison">
+                    <div class="proposal gemini" data-id="konzept-gm">
+                        <div class="proposal-header">
+                            <div class="proposal-icon">GM</div>
+                            <div class="proposal-title">
+                                <h3>Gemini</h3>
+                                <span>Google AI</span>
+                            </div>
+                        </div>
+                        <div class="proposal-content" id="content-konzept-gm"></div>
+                        <div class="proposal-footer">
+                            <button class="vote-btn up" onclick="vote('konzept-gm', 1)">👍 <span class="vote-count" id="votes-konzept-gm-up">0</span></button>
+                            <button class="vote-btn down" onclick="vote('konzept-gm', -1)">👎 <span class="vote-count" id="votes-konzept-gm-down">0</span></button>
+                            <button class="comment-btn" onclick="toggleComments('konzept-gm')">💬 <span id="comments-count-konzept-gm">0</span></button>
+                        </div>
+                        <div class="comments-section" id="comments-konzept-gm">
+                            <div class="comment-input">
+                                <input type="text" id="comment-input-konzept-gm" placeholder="Kommentar hinzufügen...">
+                                <button onclick="addComment('konzept-gm')">Senden</button>
+                            </div>
+                            <div class="comments-list" id="comments-list-konzept-gm"></div>
+                        </div>
+                    </div>
+                    <div class="proposal claude" data-id="konzept-cl">
+                        <div class="proposal-header">
+                            <div class="proposal-icon">CL</div>
+                            <div class="proposal-title">
+                                <h3>Claude</h3>
+                                <span>Anthropic AI</span>
+                            </div>
+                        </div>
+                        <div class="proposal-content" id="content-konzept-cl"></div>
+                        <div class="proposal-footer">
+                            <button class="vote-btn up" onclick="vote('konzept-cl', 1)">👍 <span class="vote-count" id="votes-konzept-cl-up">0</span></button>
+                            <button class="vote-btn down" onclick="vote('konzept-cl', -1)">👎 <span class="vote-count" id="votes-konzept-cl-down">0</span></button>
+                            <button class="comment-btn" onclick="toggleComments('konzept-cl')">💬 <span id="comments-count-konzept-cl">0</span></button>
+                        </div>
+                        <div class="comments-section" id="comments-konzept-cl">
+                            <div class="comment-input">
+                                <input type="text" id="comment-input-konzept-cl" placeholder="Kommentar hinzufügen...">
+                                <button onclick="addComment('konzept-cl')">Senden</button>
+                            </div>
+                            <div class="comments-list" id="comments-list-konzept-cl"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Lucy Section -->
+            <section id="section-lucy" class="section">
+                <div class="section-header">
+                    <h2 data-de="🎬 Lucy's Rolle" data-fr="🎬 Le rôle de Lucy">🎬 Lucy's Rolle</h2>
+                    <p data-de="Die Co-Pilotin als zweite Erzählperspektive" data-fr="La co-pilote comme deuxième perspective narrative">Die Co-Pilotin als zweite Erzählperspektive</p>
+                </div>
+                <div class="comparison">
+                    <div class="proposal gemini" data-id="lucy-gm">
+                        <div class="proposal-header">
+                            <div class="proposal-icon">GM</div>
+                            <div class="proposal-title">
+                                <h3>Gemini</h3>
+                                <span>Google AI</span>
+                            </div>
+                        </div>
+                        <div class="proposal-content" id="content-lucy-gm"></div>
+                        <div class="proposal-footer">
+                            <button class="vote-btn up" onclick="vote('lucy-gm', 1)">👍 <span class="vote-count" id="votes-lucy-gm-up">0</span></button>
+                            <button class="vote-btn down" onclick="vote('lucy-gm', -1)">👎 <span class="vote-count" id="votes-lucy-gm-down">0</span></button>
+                            <button class="comment-btn" onclick="toggleComments('lucy-gm')">💬 <span id="comments-count-lucy-gm">0</span></button>
+                        </div>
+                        <div class="comments-section" id="comments-lucy-gm">
+                            <div class="comment-input">
+                                <input type="text" id="comment-input-lucy-gm" placeholder="Kommentar hinzufügen...">
+                                <button onclick="addComment('lucy-gm')">Senden</button>
+                            </div>
+                            <div class="comments-list" id="comments-list-lucy-gm"></div>
+                        </div>
+                    </div>
+                    <div class="proposal claude" data-id="lucy-cl">
+                        <div class="proposal-header">
+                            <div class="proposal-icon">CL</div>
+                            <div class="proposal-title">
+                                <h3>Claude</h3>
+                                <span>Anthropic AI</span>
+                            </div>
+                        </div>
+                        <div class="proposal-content" id="content-lucy-cl"></div>
+                        <div class="proposal-footer">
+                            <button class="vote-btn up" onclick="vote('lucy-cl', 1)">👍 <span class="vote-count" id="votes-lucy-cl-up">0</span></button>
+                            <button class="vote-btn down" onclick="vote('lucy-cl', -1)">👎 <span class="vote-count" id="votes-lucy-cl-down">0</span></button>
+                            <button class="comment-btn" onclick="toggleComments('lucy-cl')">💬 <span id="comments-count-lucy-cl">0</span></button>
+                        </div>
+                        <div class="comments-section" id="comments-lucy-cl">
+                            <div class="comment-input">
+                                <input type="text" id="comment-input-lucy-cl" placeholder="Kommentar hinzufügen...">
+                                <button onclick="addComment('lucy-cl')">Senden</button>
+                            </div>
+                            <div class="comments-list" id="comments-list-lucy-cl"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Outdoor Section -->
+            <section id="section-outdoor" class="section">
+                <div class="section-header">
+                    <h2 data-de="🏔️ Outdoor Locations Nancy" data-fr="🏔️ Locations extérieures Nancy">🏔️ Outdoor Locations Nancy</h2>
+                    <p data-de="Strategische Drehorte in der Stadt" data-fr="Lieux de tournage stratégiques en ville">Strategische Drehorte in der Stadt</p>
+                </div>
+                <div class="comparison">
+                    <div class="proposal gemini" data-id="outdoor-gm">
+                        <div class="proposal-header">
+                            <div class="proposal-icon">GM</div>
+                            <div class="proposal-title">
+                                <h3>Gemini</h3>
+                                <span>Google AI</span>
+                            </div>
+                        </div>
+                        <div class="proposal-content" id="content-outdoor-gm"></div>
+                        <div class="proposal-footer">
+                            <button class="vote-btn up" onclick="vote('outdoor-gm', 1)">👍 <span class="vote-count" id="votes-outdoor-gm-up">0</span></button>
+                            <button class="vote-btn down" onclick="vote('outdoor-gm', -1)">👎 <span class="vote-count" id="votes-outdoor-gm-down">0</span></button>
+                            <button class="comment-btn" onclick="toggleComments('outdoor-gm')">💬 <span id="comments-count-outdoor-gm">0</span></button>
+                        </div>
+                        <div class="comments-section" id="comments-outdoor-gm">
+                            <div class="comment-input">
+                                <input type="text" id="comment-input-outdoor-gm" placeholder="Kommentar hinzufügen...">
+                                <button onclick="addComment('outdoor-gm')">Senden</button>
+                            </div>
+                            <div class="comments-list" id="comments-list-outdoor-gm"></div>
+                        </div>
+                    </div>
+                    <div class="proposal claude" data-id="outdoor-cl">
+                        <div class="proposal-header">
+                            <div class="proposal-icon">CL</div>
+                            <div class="proposal-title">
+                                <h3>Claude</h3>
+                                <span>Anthropic AI</span>
+                            </div>
+                        </div>
+                        <div class="proposal-content" id="content-outdoor-cl"></div>
+                        <div class="proposal-footer">
+                            <button class="vote-btn up" onclick="vote('outdoor-cl', 1)">👍 <span class="vote-count" id="votes-outdoor-cl-up">0</span></button>
+                            <button class="vote-btn down" onclick="vote('outdoor-cl', -1)">👎 <span class="vote-count" id="votes-outdoor-cl-down">0</span></button>
+                            <button class="comment-btn" onclick="toggleComments('outdoor-cl')">💬 <span id="comments-count-outdoor-cl">0</span></button>
+                        </div>
+                        <div class="comments-section" id="comments-outdoor-cl">
+                            <div class="comment-input">
+                                <input type="text" id="comment-input-outdoor-cl" placeholder="Kommentar hinzufügen...">
+                                <button onclick="addComment('outdoor-cl')">Senden</button>
+                            </div>
+                            <div class="comments-list" id="comments-list-outdoor-cl"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Config - will be replaced with Supabase
+        let SUPABASE_URL = '';
+        let SUPABASE_KEY = '';
+        let supabaseEnabled = false;
+        
+        // Local state
+        const state = {
+            votes: {},
+            comments: {},
+            lang: 'de'
+        };
+        
+        // Content files
+        const contentFiles = {
+            'konzept-gm': 'de_GM Konzept.md',
+            'konzept-cl': 'de_CL Konzept.md',
+            'lucy-gm': 'de_GM Lucy.md',
+            'lucy-cl': 'de_CL Lucy.md',
+            'outdoor-gm': 'de_GM Outdoor.md',
+            'outdoor-cl': 'de_CL Outdoor.md'
+        };
+        
+        // Password check
+        function checkPassword() {
+            const pw = document.getElementById('password').value.toLowerCase();
+            if (pw === 'vamos') {
+                document.getElementById('password-gate').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                loadContent();
+            } else {
+                document.getElementById('password-error').style.display = 'block';
+            }
+        }
+        
+        // Load markdown content
+        async function loadContent() {
+            for (const [id, file] of Object.entries(contentFiles)) {
+                try {
+                    const res = await fetch(file);
+                    const md = await res.text();
+                    document.getElementById(`content-${id}`).innerHTML = marked.parse(md);
+                } catch (e) {
+                    document.getElementById(`content-${id}`).innerHTML = `<p style="color:var(--muted)">Inhalt wird geladen...</p>`;
+                }
+            }
+            
+            // Load votes/comments from Supabase or localStorage
+            loadState();
+        }
+        
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById(`section-${btn.dataset.section}`).classList.add('active');
+            });
+        });
+        
+        // Language toggle
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.lang = btn.dataset.lang;
+                updateLanguage();
+            });
+        });
+        
+        function updateLanguage() {
+            document.querySelectorAll('[data-de][data-fr]').forEach(el => {
+                el.textContent = el.dataset[state.lang];
+            });
+        }
+        
+        // Voting
+        function vote(id, value) {
+            if (!state.votes[id]) state.votes[id] = { up: 0, down: 0 };
+            
+            if (value > 0) {
+                state.votes[id].up++;
+            } else {
+                state.votes[id].down++;
+            }
+            
+            updateVoteDisplay(id);
+            saveState();
+        }
+        
+        function updateVoteDisplay(id) {
+            const votes = state.votes[id] || { up: 0, down: 0 };
+            document.getElementById(`votes-${id}-up`).textContent = votes.up;
+            document.getElementById(`votes-${id}-down`).textContent = votes.down;
+        }
+        
+        // Comments
+        function toggleComments(id) {
+            const section = document.getElementById(`comments-${id}`);
+            section.classList.toggle('open');
+        }
+        
+        function addComment(id) {
+            const input = document.getElementById(`comment-input-${id}`);
+            const text = input.value.trim();
+            if (!text) return;
+            
+            if (!state.comments[id]) state.comments[id] = [];
+            state.comments[id].push({
+                text,
+                time: new Date().toLocaleString('de')
+            });
+            
+            input.value = '';
+            updateCommentsDisplay(id);
+            saveState();
+        }
+        
+        function updateCommentsDisplay(id) {
+            const comments = state.comments[id] || [];
+            const list = document.getElementById(`comments-list-${id}`);
+            const count = document.getElementById(`comments-count-${id}`);
+            
+            count.textContent = comments.length;
+            list.innerHTML = comments.map(c => `
+                <div class="comment">
+                    <div class="comment-text">${c.text}</div>
+                    <div class="comment-meta">${c.time}</div>
+                </div>
+            `).join('');
+        }
+        
+        // State persistence
+        function saveState() {
+            if (supabaseEnabled) {
+                // TODO: Save to Supabase
+            } else {
+                localStorage.setItem('rein-padel-state', JSON.stringify(state));
+            }
+        }
+        
+        function loadState() {
+            if (supabaseEnabled) {
+                // TODO: Load from Supabase
+            } else {
+                const saved = localStorage.getItem('rein-padel-state');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    state.votes = data.votes || {};
+                    state.comments = data.comments || {};
+                }
+            }
+            
+            // Update all displays
+            Object.keys(contentFiles).forEach(id => {
+                updateVoteDisplay(id);
+                updateCommentsDisplay(id);
+            });
+        }
+        
+        // Supabase integration (placeholder)
+        function initSupabase(url, key) {
+            SUPABASE_URL = url;
+            SUPABASE_KEY = key;
+            supabaseEnabled = true;
+            // TODO: Initialize Supabase client
+        }
+        
+        // Enter key on comments
+        document.querySelectorAll('.comment-input input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const id = input.id.replace('comment-input-', '');
+                    addComment(id);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
